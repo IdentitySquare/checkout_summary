@@ -1,5 +1,8 @@
-class Calculate
+class CheckoutSummary
 
+  attr_reader :discounts
+
+  #the default value for accumulate is true unless specified or set to be false
   def initialize(**args)
     @accumulate = args[:accumulate] || args[:accumulate] == nil
     @discounts = {}
@@ -29,9 +32,7 @@ class Calculate
     true
   end
 
-  def return_discounts
-    @discounts
-  end
+  
 
   def accumulate?
     @accumulate
@@ -44,44 +45,33 @@ class Calculate
   
   def calculate_discount_accumulate_true(fullcost)
     cost = fullcost 
+    discounted_amounts = []
 
     @discounts.each do |_key,discount|
       return 0 if discount[:amount].to_i > fullcost || discount[:percentage].to_i == 100
-      if discount[:amount] != nil && discount[:percentage] != nil
-        if discount[:amount] > (discount[:percentage]/100.to_f)*cost
-          discount[:percentage] = nil
-        else
-          discount[:amount] = nil
-        end
+      if discount[:percentage]
+        percentage_off = cost * (discount[:percentage] / 100.to_f)
       end
-      if discount[:amount] != nil
-        cost = cost - discount[:amount]
-      else
-        cost = cost - ((discount[:percentage]/100.to_f)*cost)
-      end
+
+      discounted_amounts =  [discount[:amount], percentage_off].compact.max
+      cost = cost - discounted_amounts
     end
     cost
   end
 
-  def calculate_discount_accumulate_false(fullcost)
-    discounted_net = []
-    cost = fullcost
-    @discounts.each do |_key,discount|
-      return 0 if discount[:amount].to_i > fullcost || discount[:percentage] == 100
-      if discount[:amount] != nil && discount[:percentage] != nil
-        if discount[:amount] > (discount[:percentage]/100.to_f)*cost
-          discount[:percentage] = nil
-        else
-          discount[:amount] = nil
-        end
+  def calculate_discount_accumulate_false(cost)
+    discounted_amounts = []
+
+    @discounts.each do |_key, discount|
+      return 0 if discount[:amount].to_i >= cost || discount[:percentage].to_i >= 100
+
+      if discount[:percentage]
+        percentage_off = cost * (discount[:percentage] / 100.to_f)
       end
-      if discount[:amount] == nil
-        discounted_net << ((discount[:percentage]/100.to_f)* fullcost)
-      else
-        cost = cost - discount[:amount]
-      end
+
+      discounted_amounts << [discount[:amount], percentage_off].compact.max
     end
-    (cost - (discounted_net.sum)).to_f
+    cost - discounted_amounts.sum
   end
 
   def calculate_discount(fullcost)
