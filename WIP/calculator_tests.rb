@@ -9,7 +9,7 @@ class Calculatortest < Minitest::Test
 # --------------------------------------------------
 
   def test_add_discount
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     result = @price.add_discount({
     name: "new yeardeal",
@@ -18,13 +18,11 @@ class Calculatortest < Minitest::Test
 
     })
 
-    # result = @price.return_discounts.size
-
     assert result == true
   end
 
   def test_add_two_discounts
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     @price.add_discount({
     name: "new yeardeal",
@@ -32,43 +30,43 @@ class Calculatortest < Minitest::Test
     percentage: 20
     })
 
-    @price.add_discount({
+    result = @price.add_discount({
     name: "student_deal",
     amount: 2000,
     percentage: nil
     })
 
-    result = @price.return_discounts.size
+    
 
-    assert result == 2
+    assert result == true
   end
 
   def test_if_discount_is_storing_amount_correctly
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     @price.add_discount({
       name: "new yeardeal",
       percentage: 20
     })
 
-    assert_nil(@price.return_discounts['new yeardeal'][:amount],nil)
+    assert_nil(@price.discounts['new yeardeal'][:amount],nil)
   end
 
   def test_if_discount_is_storing_percentage_correctly
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     @price.add_discount({
       name: "new yeardeal",
       amount: 2000
     })
 
-    assert_nil(@price.return_discounts['new yeardeal'][:percentage],nil)
+    assert_nil(@price.discounts['new yeardeal'][:percentage],nil)
   end
 
 
   def test_add_three_discounts
 
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     @price.add_discount({
       name: "new year deal",
@@ -96,7 +94,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_high_percentage
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -109,7 +107,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_two_nil_parameters
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -122,7 +120,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_invalid_amount_percentage
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -135,7 +133,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_string_parameters
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -191,6 +189,21 @@ class Calculatortest < Minitest::Test
       assert_equal test_case[1], result
     end
   end
+
+  # -------------------------------------------------------------
+  # Test for discount net amount(1 discount) with full discount
+  # -------------------------------------------------------------
+
+  [[10000, 0]].each do |test_case|
+    define_method("test_for_a_discount_#{test_case[0]}_full_percentage") do
+      setup_one_discount_full_discount
+      
+      result = @price.calculate_discount(test_case[0])
+      assert_equal test_case[1], result
+    end
+  end
+
+
 
 
   # -------------------------------------------------------------
@@ -292,8 +305,20 @@ class Calculatortest < Minitest::Test
 
   private
 
+
+  def setup_one_discount_full_discount
+    @price = CheckoutSummary.new
+
+    @price.add_discount({
+      name: "new years deal",
+      amount: nil,
+      percentage: 100
+    })
+
+  end
+
   def setup_one_discount
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     @price.add_discount({
       name: "new years deal",
@@ -304,7 +329,7 @@ class Calculatortest < Minitest::Test
   end
 
   def setup_one_discount_different
-    @price = Calculate.new
+    @price = CheckoutSummary.new
 
     @price.add_discount({
       name: "new years deal",
@@ -315,7 +340,7 @@ class Calculatortest < Minitest::Test
   end
 
   def setup_three_discounts(**args)
-    @price = Calculate.new(args)
+    @price = CheckoutSummary.new(args)
 
     @price.add_discount({
       name: "new year deal",
@@ -337,7 +362,7 @@ class Calculatortest < Minitest::Test
   end
 
   def setup_five_discounts(**args)
-    @price = Calculate.new(args)
+    @price = CheckoutSummary.new(args)
 
     @price.add_discount({
       name: "new year deal",
@@ -374,3 +399,12 @@ class Calculatortest < Minitest::Test
   end
 
 end
+
+
+  
+
+
+
+
+
+  
