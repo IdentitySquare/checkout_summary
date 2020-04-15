@@ -9,7 +9,7 @@ class Calculatortest < Minitest::Test
 # --------------------------------------------------
 
   def test_add_discount
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     result = @price.add_discount({
     name: "new yeardeal",
@@ -22,7 +22,7 @@ class Calculatortest < Minitest::Test
   end
 
   def test_add_two_discounts
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     @price.add_discount({
     name: "new yeardeal",
@@ -42,7 +42,7 @@ class Calculatortest < Minitest::Test
   end
 
   def test_if_discount_is_storing_amount_correctly
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     @price.add_discount({
       name: "new yeardeal",
@@ -53,7 +53,7 @@ class Calculatortest < Minitest::Test
   end
 
   def test_if_discount_is_storing_percentage_correctly
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     @price.add_discount({
       name: "new yeardeal",
@@ -66,7 +66,7 @@ class Calculatortest < Minitest::Test
 
   def test_add_three_discounts
 
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     @price.add_discount({
       name: "new year deal",
@@ -94,7 +94,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_high_percentage
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -107,7 +107,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_two_nil_parameters
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -120,7 +120,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_invalid_amount_percentage
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -133,7 +133,7 @@ class Calculatortest < Minitest::Test
 
 
   def test_add_string_parameters
-    @price = CheckoutSummary.new
+    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -151,7 +151,7 @@ class Calculatortest < Minitest::Test
   # --------------------------------------------------
 
   def test_delete_one_discount
-    setup_one_discount 
+    setup_one_discount({accumulate: false, gross_cost: 450})
     result = @price.remove_discount!("new years deal")
     assert result[:name] == "new years deal"
   end
@@ -160,6 +160,16 @@ class Calculatortest < Minitest::Test
     setup_one_discount
     result = @price.remove_discount!("non existing plan")
     assert result == nil
+  end
+
+  # --------------------------------------------------
+  # Test for invalid gross amount
+  # --------------------------------------------------
+
+  def test_add_invalid_gross_amount
+    assert_raises "Not a valid gross" do
+      @price = CheckoutSummary.new({accumulate: false, gross_cost: -67})
+    end
   end
 
 
@@ -171,7 +181,7 @@ class Calculatortest < Minitest::Test
     define_method("test_for_a_discount_#{test_case[0]}_one") do
       setup_one_discount({gross_cost: test_case[0]})
       
-      result = @price.calculate.last[:net_amount]
+      result = @price.calculate[-1][:value]
       assert_equal test_case[1], result
     end
   end
@@ -185,7 +195,7 @@ class Calculatortest < Minitest::Test
     define_method("test_for_a_discount_#{test_case[0]}_one_different_units") do
       setup_one_discount_different({gross_cost: test_case[0]})
       
-      result = @price.calculate.last[:net_amount]
+      result = @price.calculate[-1][:value]
       assert_equal test_case[1], result
     end
   end
@@ -198,7 +208,7 @@ class Calculatortest < Minitest::Test
     define_method("test_for_a_discount_#{test_case[0]}_full_percentage") do
       setup_one_discount_full_discount({gross_cost: test_case[0]})
       
-      result = @price.calculate.last[:net_amount]
+      result = @price.calculate[-1][:value]
       assert_equal test_case[1], result
     end
   end
@@ -223,7 +233,7 @@ class Calculatortest < Minitest::Test
     define_method("test_for_discount_#{test_case[0]}_accumulate_false") do
       setup_three_discounts({accumulate: false, gross_cost: test_case[0]})
       
-      result = @price.calculate.last[:net_amount]
+      result = @price.calculate[-1][:value]
       assert_equal test_case[1], result
     end
   end
@@ -246,7 +256,7 @@ class Calculatortest < Minitest::Test
     define_method("test_for_discount_#{test_case[0]}_accumulate_true") do
       setup_three_discounts({accumulate: true,gross_cost: test_case[0]})
 
-      result = @price.calculate.last[:net_amount]
+      result = @price.calculate[-1][:value]
       assert_equal test_case[1], result
     end    
   end
@@ -269,7 +279,7 @@ class Calculatortest < Minitest::Test
     define_method("test_for_five_discount_#{test_case[0]}_accumulate_false") do
       setup_five_discounts({accumulate: false, gross_cost: test_case[0]})
 
-      result = @price.calculate.last[:net_amount]
+      result = @price.calculate[-1][:value]
       assert_equal test_case[1], result
     end    
   end
@@ -291,7 +301,7 @@ class Calculatortest < Minitest::Test
     define_method("test_for_five_discount_#{test_case[0]}_accumulate_true") do
       setup_five_discounts({accumulate: true, gross_cost: test_case[0]})
 
-      result = @price.calculate.last[:net_amount]
+      result = @price.calculate[-1][:value]
       assert_equal test_case[1], result
     end    
   end
