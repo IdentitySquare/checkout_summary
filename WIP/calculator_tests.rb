@@ -1,7 +1,7 @@
 require './calculator.rb'
 
 
-class Calculatortest < Minitest::Test
+class Calculator_Test < Minitest::Test
 
 
 # --------------------------------------------------
@@ -12,9 +12,9 @@ class Calculatortest < Minitest::Test
     @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     result = @price.add_discount({
-    name: "new yeardeal",
-    amount: nil,
-    percentage: 20
+      name: "new yeardeal",
+      amount: nil,
+      percentage: 20
 
     })
 
@@ -25,15 +25,15 @@ class Calculatortest < Minitest::Test
     @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
 
     @price.add_discount({
-    name: "new yeardeal",
-    amount: nil,
-    percentage: 20
+      name: "new yeardeal",
+      amount: nil,
+      percentage: 20
     })
 
     result = @price.add_discount({
-    name: "student_deal",
-    amount: 2000,
-    percentage: nil
+      name: "student_deal",
+      amount: 2000,
+      percentage: nil
     })
 
     
@@ -98,9 +98,9 @@ class Calculatortest < Minitest::Test
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
-      name: "new yeardeal",
-      amount: 67789,
-      percentage: 109
+        name: "new yeardeal",
+        amount: 67789,
+        percentage: 109
       })
     end
   end
@@ -111,9 +111,9 @@ class Calculatortest < Minitest::Test
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
-      name: "new yeardeal",
-      amount: nil,
-      percentage: nil
+        name: "new yeardeal",
+        amount: nil,
+        percentage: nil
       })
     end
   end
@@ -124,9 +124,9 @@ class Calculatortest < Minitest::Test
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
-      name: "new yeardeal",
-      amount: nil,
-      percentage: nil
+        name: "new yeardeal",
+        amount: nil,
+        percentage: nil
       })
     end
   end
@@ -137,9 +137,9 @@ class Calculatortest < Minitest::Test
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
-      name: "new yeardeal",
-      amount: "hello",
-      percentage: "ruby"
+        name: "new yeardeal",
+        amount: "hello",
+        percentage: "ruby"
       })
     end
 
