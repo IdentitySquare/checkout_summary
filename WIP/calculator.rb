@@ -1,16 +1,51 @@
 class CheckoutSummary
 
-  attr_reader :discounts
-
+  attr_reader :discounts, :items
+  
   #the default value for accumulate is true unless specified or set to be false
+  
   def initialize(**args)
     @accumulate = args[:accumulate] || args[:accumulate] == nil
     @discounts = {}
-    @gross_cost = args[:gross_cost]
-    if @gross_cost < 0 || @gross_cost == nil
-      raise StandardError.new "Not a valid gross"
-    end
+    @items = {}
       
+  end
+  
+
+  def add_item(**args)
+
+    name = args[:name]
+    quantity = args[:quantity] || 1
+    cost = args[:cost]
+
+
+    if !quantity.is_a?(Integer) || cost.is_a?(String) || cost == nil || name == nil
+      raise StandardError.new "Not a valid item"
+    end
+
+    @items[name] = {
+      name: name,
+      quantity: quantity,
+      cost: cost 
+    }
+
+    true
+  end
+
+  def gross_cost
+    gross = 0
+    @items.each do |_key, value|
+      gross = gross + value[:cost] * value[:quantity]
+    end
+    gross
+  end
+
+  
+  
+  
+
+  def remove_item!(item_name)
+    @items.delete(item_name)
   end
 
   def add_discount(**args)
@@ -41,6 +76,15 @@ class CheckoutSummary
     @accumulate
   end
 
+  def return_items
+    list = []
+    @items.each do |_key,value|
+      list << value
+    end
+    list
+  end
+
+
   def remove_discount!(discount_name)
     @discounts.delete(discount_name)
   end
@@ -58,14 +102,15 @@ class CheckoutSummary
   private
 
   def calculate_discount_accumulate_true
-    cost = @gross_cost
+    cost = gross_cost
     discounted_amounts = []
     discount_breakdown = []
-    discount_breakdown << ({name: 'gross', type:'gross', value: @gross_cost})
+    discount_breakdown << return_items
+    discount_breakdown << {name: 'gross', type:'gross', value: gross_cost}
 
 
     @discounts.each do |_key,discount|
-      if discount[:amount].to_i > @gross_cost || discount[:percentage].to_i == 100
+      if discount[:amount].to_i > gross_cost || discount[:percentage].to_i == 100
         return [{name: discount[:name], type: "net" ,value: 0}]
       end
       if discount[:percentage]
@@ -74,40 +119,50 @@ class CheckoutSummary
 
       discounted_amounts =  [discount[:amount], percentage_off].compact.max
 
-      discount_breakdown << ({
+      discount_breakdown << {
         name: discount[:name],
         type: "discount",
         value: discounted_amounts
-      })
+      }
 
       cost = cost - discounted_amounts
     end
-    discount_breakdown << ({name: "net_amount", type:"net", value: cost})
+
+    if cost < 0
+      discount_breakdown << {name: "net_amount", type: "net", value: 0}
+    else
+      discount_breakdown << {name: "net_amount", type: "net", value: cost}
+    end
+    discount_breakdown.flatten
   end
 
   def calculate_discount_accumulate_false
     discounted_amounts = []
     discount_breakdown = []
-    discount_breakdown << ({name: "gross_amount", type: "gross", value: @gross_cost})
+    discount_breakdown << return_items
+    discount_breakdown << {name: "gross_amount", type: "gross", value: gross_cost}
 
     @discounts.each do |_key, discount|
-     if discount[:amount].to_i > @gross_cost || discount[:percentage].to_i == 100
-        return [{name: discount[:name], type: "net" ,value: 0}]
-      end
 
       if discount[:percentage]
-        percentage_off = @gross_cost * (discount[:percentage] / 100.to_f)
+        percentage_off = gross_cost * (discount[:percentage] / 100.to_f)
       end
 
       discounted_amounts << [discount[:amount], percentage_off].compact.max
-      discount_breakdown << ({name: discount[:name],
+      discount_breakdown << {name: discount[:name],
       type: "discount",
-      value: discounted_amounts.last})
+      value: discounted_amounts.last}
     
     end
-    gross_cost = @gross_cost - discounted_amounts.sum
-    discount_breakdown << ({name: "net_amount", type: "net", value: gross_cost})
-    
+
+    gross_amount = gross_cost - discounted_amounts.sum
+
+    if gross_amount < 0
+      discount_breakdown << {name: "net_amount", type: "net", value: 0}
+    else
+      discount_breakdown << {name: "net_amount", type: "net", value: gross_amount}
+    end
+    discount_breakdown.flatten
   end
 
 end
