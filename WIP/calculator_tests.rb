@@ -3,13 +3,19 @@ require './calculator.rb'
 
 class Calculator_Test < Minitest::Test
 
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+#                    UNIT TESTS
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
 
 # --------------------------------------------------
 # Test for adding discounts
 # --------------------------------------------------
 
   def test_add_discount
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     result = @price.add_discount({
       name: "new yeardeal",
@@ -22,7 +28,7 @@ class Calculator_Test < Minitest::Test
   end
 
   def test_add_two_discounts
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     @price.add_discount({
       name: "new yeardeal",
@@ -42,7 +48,7 @@ class Calculator_Test < Minitest::Test
   end
 
   def test_if_discount_is_storing_amount_correctly
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     @price.add_discount({
       name: "new yeardeal",
@@ -53,7 +59,7 @@ class Calculator_Test < Minitest::Test
   end
 
   def test_if_discount_is_storing_percentage_correctly
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     @price.add_discount({
       name: "new yeardeal",
@@ -66,7 +72,7 @@ class Calculator_Test < Minitest::Test
 
   def test_add_three_discounts
 
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     @price.add_discount({
       name: "new year deal",
@@ -86,7 +92,6 @@ class Calculator_Test < Minitest::Test
       percentage: 12
     })
 
-     
 
     assert result == true
 
@@ -94,7 +99,7 @@ class Calculator_Test < Minitest::Test
 
 
   def test_add_high_percentage
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -107,7 +112,7 @@ class Calculator_Test < Minitest::Test
 
 
   def test_add_two_nil_parameters
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -120,7 +125,7 @@ class Calculator_Test < Minitest::Test
 
 
   def test_add_invalid_amount_percentage
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -133,7 +138,7 @@ class Calculator_Test < Minitest::Test
 
 
   def test_add_string_parameters
-    @price = CheckoutSummary.new({accumulate: false, gross_cost: 50000})
+    @price = CheckoutSummary.new({accumulate: false})
 
     assert_raises "Not a valid deal" do
       @price.add_discount({
@@ -151,7 +156,7 @@ class Calculator_Test < Minitest::Test
   # --------------------------------------------------
 
   def test_delete_one_discount
-    setup_one_discount({accumulate: false, gross_cost: 450})
+    setup_one_discount({accumulate: false})
     result = @price.remove_discount!("new years deal")
     assert result[:name] == "new years deal"
   end
@@ -163,150 +168,195 @@ class Calculator_Test < Minitest::Test
   end
 
   # --------------------------------------------------
-  # Test for invalid gross amount
+  # Test for adding an item 
   # --------------------------------------------------
 
-  def test_add_invalid_gross_amount
-    assert_raises "Not a valid gross" do
-      @price = CheckoutSummary.new({accumulate: false, gross_cost: -67})
+  def test_add_one_item
+    @price = CheckoutSummary.new
+    result = @price.add_item({
+      name: "pen",
+      quantity: 1 ,
+      cost:  50
+    }) 
+    assert result == true
+  end 
+
+  def test_add_two_items
+    @price = CheckoutSummary.new
+
+    @price.add_item({
+      name: "duster",
+      quantity: 1 ,
+      cost:  42
+    })
+
+    result = @price.add_item({
+      name: "pen",
+      quantity: 1 ,
+      cost:  50
+    })
+
+    assert result == true
+  end
+
+  def test_add_item_name_nil
+    assert_raises "Not a valid item" do
+      @price.add_item({
+        name:"",
+        quantity: 2,
+        cost: 700
+      })
     end
   end
 
-
-  # -------------------------------------------------------------
-  # Test for discount net amount(1 discount)
-  # -------------------------------------------------------------
-
-  [[10000, 8000]].each do |test_case|
-    define_method("test_for_a_discount_#{test_case[0]}_one") do
-      setup_one_discount({gross_cost: test_case[0]})
-      
-      result = @price.calculate[-1][:value]
-      assert_equal test_case[1], result
+  def test_add_item_quantity_string
+    assert_raises "Not a valid item" do
+      @price.add_item({
+        name:"boxes",
+        quantity: "xxx",
+        cost: 700
+      })
     end
   end
 
-  # -------------------------------------------------------------
-  # Test for discount net amount(1 discount) different amount & percentage
-  # -------------------------------------------------------------
-
-
-  [[10000, 5000]].each do |test_case|
-    define_method("test_for_a_discount_#{test_case[0]}_one_different_units") do
-      setup_one_discount_different({gross_cost: test_case[0]})
-      
-      result = @price.calculate[-1][:value]
-      assert_equal test_case[1], result
+  def test_add_item_quantity_nil
+    assert_raises "Not a valid item" do
+      @price.add_item({
+        name:"boxes",
+        quantity: nil,
+        cost: 700
+      })
     end
   end
 
-  # -------------------------------------------------------------
-  # Test for discount net amount(1 discount) with full discount
-  # -------------------------------------------------------------
-
-  [[10000, 0]].each do |test_case|
-    define_method("test_for_a_discount_#{test_case[0]}_full_percentage") do
-      setup_one_discount_full_discount({gross_cost: test_case[0]})
-      
-      result = @price.calculate[-1][:value]
-      assert_equal test_case[1], result
+  def test_add_item_cost_nil
+    assert_raises "Not a valid item" do
+      @price.add_item({
+        name:"boxes",
+        quantity: 56,
+        cost: nil
+      })
     end
   end
 
-
-
-
-  # -------------------------------------------------------------
-  # Test for discount net amount accumulate == false(3 discounts)
-  # -------------------------------------------------------------
-
-  [
-    [0, 0],
-    [100, 0],
-    [10000, 4800],
-    [25000, 15000],
-    [500,  0],
-    [70000, 45600],
-    [100000, 66000]
-    
-  ].each do |test_case|
-    define_method("test_for_discount_#{test_case[0]}_accumulate_false") do
-      setup_three_discounts({accumulate: false, gross_cost: test_case[0]})
-      
-      result = @price.calculate[-1][:value]
-      assert_equal test_case[1], result
+  def test_add_item_cost_is_string
+    assert_raises "Not a valid item" do
+      @price.add_item({
+        name:"boxes",
+        quantity: 56,
+        cost: "hello"
+      })
     end
   end
 
   # --------------------------------------------------
-  # Test for discount net amount accumulate == true (3 discounts)
+  # Test for removing an item 
   # --------------------------------------------------
 
-
-  [
-    [0, 0],
-    [100, 0],
-    [10000, 5280],
-    [25000, 15840],
-    [500,  0],
-    [70000, 47520],
-    [100000, 68640]
-    
-  ].each do |test_case|
-    define_method("test_for_discount_#{test_case[0]}_accumulate_true") do
-      setup_three_discounts({accumulate: true,gross_cost: test_case[0]})
-
-      result = @price.calculate[-1][:value]
-      assert_equal test_case[1], result
-    end    
+  def test_remove_existing_item
+    setup_one_item
+    result = @price.remove_item!("pen")
+    assert result[:name] == "pen"
   end
 
-  # -------------------------------------------------------------
-  # Test for discount net amount accumulate == false(5 discounts)
-  # -------------------------------------------------------------
-
-
-  [
-    [0, 0],
-    [100, 0],
-    [10000, 4670],
-    [25000, 14720],
-    [500,  0],
-    [150000, 98470],
-    [50000, 31470]
-   
-    ].each do |test_case|
-    define_method("test_for_five_discount_#{test_case[0]}_accumulate_false") do
-      setup_five_discounts({accumulate: false, gross_cost: test_case[0]})
-
-      result = @price.calculate[-1][:value]
-      assert_equal test_case[1], result
-    end    
+  def test_remove_non_existing_item
+    setup_one_item
+    result = @price.remove_item!("xyz")
+    assert result == nil
   end
 
-  # -------------------------------------------------------------
-  # Test for discount net amount accumulate == true(5 discounts)
-  # -------------------------------------------------------------
+  def test_remove_nil_item
+    setup_one_item
+    result = @price.remove_item!(nil)
+    assert result == nil
+  end
 
-  [
-    [0, 0],
-    [100, 0],
-    [10000, 5197.5],
-    [25000, 15651.9],
-    [500,  0],
-    [150000, 102771.9],
-    [50000, 33075.9]
-   
-    ].each do |test_case|
-    define_method("test_for_five_discount_#{test_case[0]}_accumulate_true") do
-      setup_five_discounts({accumulate: true, gross_cost: test_case[0]})
-
-      result = @price.calculate[-1][:value]
-      assert_equal test_case[1], result
-    end    
+  def test_remove_empty_string
+    setup_one_item
+    result = @price.remove_item!("")
+    assert result == nil
   end
 
 
+  # -------------------------------------------------------------
+  # -------------------------------------------------------------
+  #                    INTEGRATION TESTS
+  # -------------------------------------------------------------
+  # -------------------------------------------------------------
+  
+
+
+  
+
+
+  [
+    {
+      accumulate: true,
+      items: [{c: 100}],
+      discounts: [{p: 20}],
+      result: 80
+    },
+    {
+      accumulate: true,
+      items: [{c: 200, q: 2}, {c: 100, q: 1}],
+      discounts: [{a: 200, p: 30}],
+      result: 300
+    },
+
+    {
+      accumulate: true,
+      items: [{c: 2000, q: 3}],
+      discounts: [{a: 90, p: 10}, {a: 70}],
+      result: 5330 
+    },
+
+    {
+      accumulate: false,
+      items: [{c: 3750, q: 2}],
+      discounts: [{a: 90, p: 10}, {a: 70}],
+      result: 6680 
+    },
+
+    {
+      accumulate: false,
+      items: [{c: 3750, q: 2},{c: 1000, q: 3}],
+      discounts: [{a: 30000}],
+      result: 0 
+    },
+
+    {
+      accumulate: false,
+      items: [{c: 3750, q: 2}],
+      discounts: [{a: 500, p: 50},{a: 5000}],
+      result: 0 
+    },
+
+    {
+      accumulate: true,
+      items: [{c: 2000, q: 2},{c: 3000}],
+      discounts: [{a: 500, p: 50},{a: 20}],
+      result: 3480
+    },
+
+    {
+      accumulate: false,
+      items: [{c: 1250, q: 2},{c: 3000, q: 1}],
+      discounts: [{a: 500, p: 8},{a: 20, p: 3}],
+      result: 4835
+    }
+
+  ].each do |test|
+
+    define_method("test_integration_#{test[:items].count}_#{test[:discounts].count}_#{test[:accumulate]}_#{test[:result]}") do
+
+      setup_base(test[:accumulate])
+      setup_items(test[:items])
+      setup_discounts(test[:discounts])
+
+      assert_equal test[:result], @price.calculate[-1][:value]
+    end
+
+  end
 
 
   
@@ -314,6 +364,42 @@ class Calculator_Test < Minitest::Test
 
 
   private
+
+
+  def setup_base(accumulate=true)
+    @price = CheckoutSummary.new({
+      accumulate: accumulate
+    })
+  end
+
+  def setup_items(items=[])
+    items.each do |item|
+      name = "item_#{item[:c]}_#{item[:q]}"
+
+      @price.add_item({
+        name: name,
+        quantity: item[:q],
+        cost: item[:c]
+      })
+    end
+  end
+
+
+  def setup_discounts(discounts=[])
+    discounts.each do |discount|
+      name = "discount_#{discount[:a]}_#{discount[:p]}"
+
+      @price.add_discount({
+        name: name,
+        amount: discount[:a],
+        percentage: discount[:p]
+      })
+    end
+  end
+
+  # -------------------------------------------------------------
+  # Setup for discounts
+  # -------------------------------------------------------------
 
 
   def setup_one_discount_full_discount(**args)
@@ -349,72 +435,18 @@ class Calculator_Test < Minitest::Test
 
   end
 
-  def setup_three_discounts(**args)
-    @price = CheckoutSummary.new(args)
+  
+  def setup_one_item
 
-    @price.add_discount({
-      name: "new year deal",
-      amount: nil,
-      percentage: 20
+    @price = CheckoutSummary.new
+
+    @price.add_item({
+      name: "pen",
+      quantity: 1 ,
+      cost:  50
     })
-
-    @price.add_discount({
-      name: "student_deal",
-      amount: 2000,
-      percentage: nil
-    })
-
-    @price.add_discount({
-      name: "staff_discount",
-      amount: nil,
-      percentage: 12
-    })
-  end
-
-  def setup_five_discounts(**args)
-    @price = CheckoutSummary.new(args)
-
-    @price.add_discount({
-      name: "new year deal",
-      amount: nil,
-      percentage: 20
-    })
-
-    @price.add_discount({
-      name: "student_deal",
-      amount: 2000,
-      percentage: nil
-    })
-
-    @price.add_discount({
-      name: "staff_discount",
-      amount: nil,
-      percentage: 12
-    })
-
-    @price.add_discount({
-      name: "gift_deal",
-      amount: 30,
-      percentage: nil
-    })
-
-    @price.add_discount({
-      name: "special_offer",
-      amount: 12 ,
-      percentage: 1
-    })
-
 
 
   end
 
 end
-
-
-  
-
-
-
-
-
-  
